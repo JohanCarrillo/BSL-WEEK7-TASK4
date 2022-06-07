@@ -64,6 +64,7 @@ export class Menu{
   * @param question texto que indica pregunta a realizar
   * @returns un numero entero
   */
+
   async getInt(question: string): Promise<number>{
     console.log(question);
     const data = await this.ask()

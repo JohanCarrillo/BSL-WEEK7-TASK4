@@ -1,5 +1,5 @@
 import { Mentor } from './class_Mentor';
-import { Attendee } from './class_Attendee';
+import { Student } from './class_Student';
 
 export class Conference {
 
@@ -7,20 +7,19 @@ export class Conference {
 	private _mentor: Mentor;
 	public startDate: Date;
 	public endDate: Date;
-	private _studentList: Attendee[];
+	private _studentList: Student[];
 
 	constructor(
 		title: string,
 		mentor: Mentor,
 		startDate: Date,
 		endDate: Date,
-		students: Attendee[] = []
 	) {
 		this._title = title;
 		this._mentor = mentor;
 		this.startDate = startDate;
 		this.endDate = endDate;
-		this._studentList = students;
+		this._studentList = [];
 	}
 
 	// -------------------------------- getters --------------------------------- 
@@ -31,18 +30,21 @@ export class Conference {
 
 	// ----------------------------- public methods -----------------------------
 
-	public addStudent = (newAttendee: Attendee): void => {
+	public addStudent = (newStudent: Student): void => {
 		if (this._studentList.length <= 20) {
-			this._studentList.push(newAttendee);
-			console.log('Estudiante guardado exitosamente');
+			this._studentList.push(newStudent);
+			console.log(`Estudiante ${newStudent.name} guardado exitosamente`);
 		}
 		else console.log('La conferencia ya esta llena');
 	}
 
 	public showStudentList () {
-		if (this._studentList.length === 0) console.log('No hay estudiantes registrados');
-		this._studentList.forEach( student => {
-			console.log(`Nombre: ${student.name}, email: ${student.email}`);
-		});
+		if (this._studentList.length === 0) {
+			console.log('No hay estudiantes registrados');
+		} else {
+			this._studentList.forEach( student => {
+				console.log(`Nombre: ${student.name}, email: ${student.email}`);
+			});
+		}
 	}
 }

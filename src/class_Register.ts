@@ -15,11 +15,6 @@ export class Register extends Menu {
 		this._listOfStudents = [];
 	}
 
-	// -------------------------------- getters ---------------------------------
-	public get students() {return this._listOfStudents;}
-	public get mentors() {return this._listOfMentors;}
-	public get events() {return this._listOfEvents;}
-
 	// ---------------------------- private methods -----------------------------
 
 	private validateEmail(email: string): boolean {
@@ -36,35 +31,48 @@ export class Register extends Menu {
 				Mentor: ${event.mentor.name}`);
 	}
 
+	private addAttendee<T>(newAttendee: T): void {
+		if (newAttendee instanceof Mentor) {
+			this._listOfMentors.push(newAttendee);
+			console.log(`New mentor ${newAttendee.name} saved`);
+		} else if (newAttendee instanceof Student) {
+			this._listOfStudents.push(newAttendee);
+			console.log(`New student ${newAttendee.name} saved`);
+		}
+	}
+
 	// ----------------------------- public methods -----------------------------
 
-	public async addConference(): Promise<void> {
+	public async addConference(): Promise<void | number> {
 		
 		// validate mentor information
 		console.log('Solo los mentores pueden crear conferencias, valide su informacion:');
 		const mentorEmail = await super.getString('Ingrese su email de mentor');
-		const mentorPassword = await super.getString('Ingrese su password');
-		const mentor = this._listOfMentors.find(ment => ment.email === mentorEmail);
+		const mentorPassword = await super.getString('Ingrese su contraseña');
+		const mentor = this._listOfMentors.find(mentor => mentor.email === mentorEmail);
 		
 		if (!mentor) {
 			console.log('El email no corresponde a ningun mentor registrado');
 		} else if (mentor.password !== mentorPassword) {
 			console.log('La contraseña es incorrecta');
-		} else {  
+		} else {
 			
-			// if information is valid must check date condition
+			// if the information is valid we must check date condition
 			const conferenceTitle = await super.getString('Inserte el titulo del evento');
 			const startDate = new Date(await super.getString('Inserte la fecha de inicio YYYY/MM/DD'));
 			const endDate = new Date(await super.getString('Inserte la fecha de finalizacion YYYY/MM/DD'));
-
-			const overlapDateEvent = mentor.listOfEvents.find(event => event.startDate >= startDate);
+			if (startDate === null || endDate === null) {
+				console.log('formato de fecha invalido');
+				return 0;
+			}
+			const overlapDateEvent = mentor.listOfEvents.find(event => event.endDate >= startDate);
 			if (overlapDateEvent) {
 				console.log('El mentor tiene otro evento en esa fecha');
 			} else {
 				const newConference = new Conference(conferenceTitle, mentor, startDate, endDate);
 				mentor.addConference(newConference);
 				this._listOfEvents.push(newConference);
-				console.log('El evento se creo de forma exitosa');
+				console.log(`El evento ${newConference.title} se creo de forma exitosa`);
 			}
 		}
 	}
@@ -76,11 +84,10 @@ export class Register extends Menu {
 		const mentorPassword = await super.getString('Inserte password del mentor');
 
 		if (this.validateEmail(mentorEmail)) {
-			console.log('This email is already registered');
+			console.log('Este email ya esta registrado');
 		} else {
 			const newMentor = new Mentor(mentorName, mentorEmail, mentorPassword);
-			this._listOfMentors.push(newMentor);
-			console.log(`New mentor ${newMentor.name} saved`);
+			this.addAttendee(newMentor);
 		}
 	}
 
@@ -90,27 +97,26 @@ export class Register extends Menu {
 		const studentEmail = await super.getString('Inserte email del estudiante');
 
 		if (this.validateEmail(studentEmail)) {
-			console.log('This email is already registered');
+			console.log('Este email ya esta registrado');
 		} else {
 			const newStudent = new Student(studentName, studentEmail);
-			this._listOfStudents.push(newStudent);
-			console.log('New student saved');
+			this.addAttendee(newStudent);
 		}
 	}
 
 	public async addStudentToConference(): Promise<void> {
 
 		const conferenceTitle = await super.getString(
-			'Ingrese el titulo de la conferencia a la que se quiere registrar');
+			'Ingrese el titulo de la conferencia en la que quiere registrar');
 		const studentEmail = await super.getString('Ingrese el email del estudiante');
 
 		// validate if student and event exist
-		const student = this._listOfStudents.find(stu => stu.email === studentEmail);
-		const conference = this._listOfEvents.find(confe => confe.title === conferenceTitle);
+		const student = this._listOfStudents.find(student => student.email === studentEmail);
+		const conference = this._listOfEvents.find(event => event.title === conferenceTitle);
 
 		if (student && conference){
 			conference.addStudent(student);
-			console.log(`${student.name} registrado en ${conference.title}`);
+			console.log(`${student.name} ha sido registrado en ${conference.title}`);
 		} else {
 			console.log('Estudiante o evento no encontrado');
 		}
@@ -120,30 +126,25 @@ export class Register extends Menu {
 		if (this._listOfMentors.length === 0) {
 			console.log('No hay mentores guardados');
 		}
-		for (let mentor of this._listOfMentors) {
-			console.log(mentor.name, mentor.email);
-		}
+		this._listOfMentors.forEach(mentor => {mentor.showInfo()});
 	}
 
 	public showStudents(): void {
 		if (this._listOfStudents.length === 0) {
 			console.log('No hay estudiantes guardados');
 		}
-		for (let student of this._listOfStudents) {
-			console.log(student.name, student.email);
-		}
+		this._listOfStudents.forEach(student => {student.showInfo()});
 	}
 
 	public showEvents(): void {
 		if (this._listOfEvents.length === 0) {
 			console.log('No hay eventos guardados');
 		}
-		for (let event of this._listOfEvents) {
-			this.showEvent(event);
-		}
+		this._listOfEvents.forEach(event => {this.showEvent(event)});
 	}
 
 	public showStudentsByEvent(): void {
+		if (this._listOfEvents.length === 0) console.log('No hay eventos resgistrados');
 		this._listOfEvents.forEach(event => {
 			console.log(event.title);
 			event.showStudentList();
@@ -151,6 +152,7 @@ export class Register extends Menu {
 	}
 
 	public showEventsByMentor(): void {
+		if (this._listOfMentors.length === 0) console.log('No hay mentores resgistrados');
 		this._listOfMentors.forEach(mentor => {
 			console.log(mentor.name);
 			mentor.showEvents();

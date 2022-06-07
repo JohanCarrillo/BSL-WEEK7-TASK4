@@ -5,8 +5,8 @@ export class Mentor extends Attendee {
 	private _password: string;
 	public listOfEvents: Conference[];
 
-	constructor(myName: string, myEmail: string, password: string) {
-		super(myName, myEmail);
+	constructor(name: string, email: string, password: string) {
+		super(name, email);
 		this._password = password;
 		this.listOfEvents = [];
 	}
@@ -23,12 +23,16 @@ export class Mentor extends Attendee {
 
 	public showEvents(): void {
 		if (this.listOfEvents.length === 0) {
-			console.log('Sin eventos');
+			console.log('Este mentor no esta en ningun evento');
 		} else {
 			this.listOfEvents.forEach(event => {
 				console.log(`${event.title}:
-				from ${event.startDate.getDate()}/${event.startDate.getMonth() + 1} to ${event.endDate.getDate()}/${event.endDate.getMonth() + 1},`)
+				from ${event.startDate.getDate()}/${event.startDate.getMonth() + 1} to ${event.endDate.getDate()}/${event.endDate.getMonth() + 1},`);
 			});
 		}
+	}
+
+	public showInfo(): void {
+		console.log(`Mentor, nombre: ${this.name}, email: ${this.email}`);
 	}
 }
